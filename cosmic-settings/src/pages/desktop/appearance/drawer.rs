@@ -5,7 +5,7 @@ use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::Alignment;
 use cosmic::iced::core::{Color, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
-use cosmic::widget::{ColorPickerModel, container, flex_row, settings, text};
+use cosmic::widget::{ColorPickerModel, container, flex_row, row, settings, slider, text};
 use cosmic::{Apply, Element, Task, widget};
 use cosmic_config::ConfigGet;
 use std::sync::Arc;

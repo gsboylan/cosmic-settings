@@ -45,7 +45,7 @@ impl Info {
         let mut seen_devices = HashSet::new();
         let mut seen_names = HashSet::new();
 
-        for adapter in adapters {
+        for adapter in adapters.await {
             let adapter_info = adapter.get_info();
 
             if adapter_info.device_type == wgpu::DeviceType::Cpu {
