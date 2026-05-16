@@ -1,12 +1,11 @@
-use cosmic::{
-    Element, Task,
-    cctk::sctk::reexports::client::{Proxy, backend::ObjectId, protocol::wl_output::WlOutput},
-    cosmic_config::{self, CosmicConfigEntry},
-    cosmic_theme::Density,
-    iced::{Alignment, Length},
-    surface,
-    widget::{button, container, dropdown, row, settings, slider, space, text},
-};
+use cosmic::cctk::sctk::reexports::client::Proxy;
+use cosmic::cctk::sctk::reexports::client::backend::ObjectId;
+use cosmic::cctk::sctk::reexports::client::protocol::wl_output::WlOutput;
+use cosmic::cosmic_config::{self, CosmicConfigEntry};
+use cosmic::cosmic_theme::{Density, Roundness};
+use cosmic::iced::{Alignment, Length};
+use cosmic::widget::{button, container, dropdown, row, settings, slider, space, text};
+use cosmic::{Element, Task, surface};
 
 use cosmic::Apply;
 use cosmic_config::ConfigSet;
@@ -15,15 +14,15 @@ use cosmic_panel_config::{
     CosmicPanelOuput, PanelAnchor, PanelSize,
 };
 use cosmic_settings_page::{self as page, Section};
-use std::{collections::HashMap, time::Duration};
-
-use crate::pages::desktop::appearance::Roundness;
+use std::collections::HashMap;
+use std::time::Duration;
 
 pub struct PageInner {
     pub(crate) config_helper: Option<cosmic_config::Config>,
     pub(crate) panel_config: Option<CosmicPanelConfig>,
     pub opacity: f32,
     pub opacity_changing: bool,
+    pub size: PanelSize,
     pub outputs: Vec<String>,
     pub anchors: Vec<String>,
     pub backgrounds: Vec<String>,
@@ -41,6 +40,7 @@ impl Default for PageInner {
             panel_config: Option::default(),
             opacity: 0.0,
             opacity_changing: false,
+            size: PanelSize::M,
             outputs: vec![fl!("all-displays")],
             anchors: vec![
                 Anchor(PanelAnchor::Left).to_string(),
@@ -207,7 +207,7 @@ pub(crate) fn style<
                         text::body(fl!("small")).into(),
                         slider(
                             0..=4,
-                            match panel_config.size {
+                            match inner.size {
                                 PanelSize::XS => 0,
                                 PanelSize::S => 1,
                                 PanelSize::M => 2,
@@ -229,6 +229,7 @@ pub(crate) fn style<
                                 }
                             },
                         )
+                        .on_release(Message::PanelSizeCommit)
                         .width(Length::Fill)
                         .apply(cosmic::widget::container)
                         .max_width(250)
@@ -420,6 +421,7 @@ pub enum Message {
     Output(usize),
     AnchorGap(bool),
     PanelSize(PanelSize),
+    PanelSizeCommit,
     Appearance(usize),
     ExtendToEdge(bool),
     OpacityRequest(f32),
@@ -500,6 +502,7 @@ impl PageInner {
                     if let Err(err) = default.write_entry(config) {
                         tracing::error!(?err, "Error resetting panel config.");
                     }
+                    self.size.clone_from(&default.size);
                     self.system_default = Some(default.clone());
                     self.panel_config.clone_from(&self.system_default);
                 } else {
@@ -598,7 +601,10 @@ impl PageInner {
                 _ = panel_config.set_border_radius(helper, new_radius).unwrap();
             }
             Message::PanelSize(size) => {
-                _ = panel_config.set_size(helper, size);
+                self.size = size;
+            }
+            Message::PanelSizeCommit => {
+                _ = panel_config.set_size(helper, self.size.clone());
                 // Reset any size overrides the user might have set
                 _ = panel_config.set_size_center(helper, None);
                 _ = panel_config.set_size_wings(helper, None);
@@ -661,6 +667,7 @@ impl PageInner {
                 }
             }
             Message::PanelConfig(c) => {
+                self.size = c.size.clone();
                 self.panel_config = Some(*c);
                 return Task::none();
             }

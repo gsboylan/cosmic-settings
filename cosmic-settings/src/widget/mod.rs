@@ -8,10 +8,9 @@ use cosmic::cosmic_theme::Spacing;
 use cosmic::iced::core::text::Wrapping;
 use cosmic::iced::{Alignment, Length};
 use cosmic::widget::color_picker::ColorPickerUpdate;
+use cosmic::widget::space::{horizontal, vertical};
 use cosmic::widget::{
-    self, ColorPickerModel, button, column, container, divider, icon, list, row, settings,
-    space::{horizontal, vertical},
-    text,
+    self, ColorPickerModel, button, column, container, divider, icon, list, row, settings, text,
 };
 use cosmic::{Apply, Element, theme};
 use cosmic_settings_page as page;
@@ -206,8 +205,10 @@ pub fn go_next_with_item<'a, Msg: 'static>(
     msg_opt: impl Into<Option<Msg>>,
 ) -> list::ListButton<'a, Msg> {
     settings::item_row(vec![
-        text::body(description).wrapping(Wrapping::Word).into(),
-        horizontal().into(),
+        text::body(description)
+            .width(Length::Fill)
+            .wrapping(Wrapping::Word)
+            .into(),
         row::with_capacity(2)
             .push(item)
             .push(icon::from_name("go-next-symbolic").size(16).icon())
